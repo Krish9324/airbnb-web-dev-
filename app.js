@@ -34,13 +34,14 @@ app.use(express.static(path.join(__dirname,"/public")));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 const sessionOptions = {
-    secret: "mysupersecretcode",
+    secret: process.env.SESSION_SECRET || "mysupersecretcode",
     resave: false,
     saveUninitialized: true,
     cookie: {
         expires: Date.now() + 7 * 24 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
     },
 };
 
@@ -99,12 +100,16 @@ main().then(() => {
 });
 
 function startServer(mode) {
-    app.listen(8080, () => {
-        console.log("✅ Server is listening to port 8080");
-        console.log("🌐 Visit: http://localhost:8080");
+    const PORT = process.env.PORT || 8080;
+    app.listen(PORT, () => {
+        console.log("✅ Server is listening to port", PORT);
+        console.log("🌐 Visit: http://localhost:" + PORT);
         console.log(`📊 Database: ${mode}`);
         if (mode === "Fallback Mode") {
             console.log("⚠️  Note: Some features may not work without MongoDB");
         }
     });
 }
+
+// Export for Vercel
+module.exports = app;
